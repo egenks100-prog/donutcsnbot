@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DonutFlip Casino</title>
+    <style>
+        /* Game Cards Styles */
+        .welcome-section {
+            text-align: center;
+            margin: 40px 0;
+            color: #ffffff;
+        }
+        
+        .welcome-section h2 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .games-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .game-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-card.available:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(79, 172, 254, 0.3);
+            border-color: #4facfe;
+        }
+        
+        .game-card.coming-soon {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .game-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        .game-card h3 {
+            color: #ffffff;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+        
+        .game-card p {
+            color: #b4b4b4;
+            font-size: 1.1em;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .play-game-btn {
+            background: linear-gradient(135deg, #26de81 0%, #20bf6b 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            padding: 15px 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .play-game-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(38, 222, 129, 0.3);
+        }
+        
+        .soon-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        @media (max-width: 768px) {
+            .games-overview {
+                grid-template-columns: 1fr;
+                padding: 15px;
+            }
+        }
+        
+        /* Notification System */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            max-width: 400px;
+            padding: 15px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            z-index: 10001;
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, rgba(38, 222, 129, 0.9) 0%, rgba(32, 191, 107, 0.9) 100%);
+            border-left-color: #26de81;
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.9) 0%, rgba(238, 90, 36, 0.9) 100%);
+            border-left-color: #ff6b6b;
+        }
+        
+        .notification.info {
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.9) 0%, rgba(0, 242, 254, 0.9) 100%);
+            border-left-color: #4facfe;
+        }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000000;
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Snow Animation */
+        .snow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            color: #ffffff;
+            user-select: none;
+            pointer-events: none;
+            font-size: 12px;
+            animation: fall linear infinite;
+        }
+        
+        @keyframes fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0.3;
+            }
+        }
+        
+        /* Main Container */
+        .casino-container {
+            position: relative;
+            z-index: 2;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Top Bar */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            z-index: 10;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 18px;
+        }
+        
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .balance-display {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .deposit-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .withdraw-btn {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+        }
+        
+        .logout-btn {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.3);
+        }
+        
+        /* Main Content */
+        .main-content {
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+            padding: 0 40px;
+        }
+        
+        .welcome-title {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(79, 172, 254, 0.3);
+        }
+        
+        .welcome-subtitle {
+            font-size: 1.5rem;
+            color: #b4b4b4;
+            margin-bottom: 60px;
+            font-weight: 300;
+        }
+        
+        /* Games Section */
+        .games-section {
+            margin-top: 40px;
+        }
+        
+        .games-title {
+            font-size: 2rem;
+            margin-bottom: 40px;
+            color: #ffffff;
+            font-weight: 600;
+        }
+        
+        /* Mines Game Card */
+        .mines-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(79, 172, 254, 0.2);
+            border-radius: 30px;
+            padding: 60px 40px;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .mines-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(79, 172, 254, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .mines-card:hover::before {
+            left: 100%;
+        }
+        
+        .mines-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            border-color: #4facfe;
+            box-shadow: 0 25px 50px rgba(79, 172, 254, 0.3);
+            background: rgba(79, 172, 254, 0.1);
+        }
+        
+        .mines-icon {
+            font-size: 5rem;
+            margin-bottom: 30px;
+            display: block;
+            filter: drop-shadow(0 0 20px rgba(79, 172, 254, 0.5));
+        }
+        
+        .mines-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .mines-description {
+            font-size: 1.2rem;
+            color: #b4b4b4;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .play-now-btn {
+            background: linear-gradient(135deg, #26de81 0%, #20bf6b 100%);
+            border: none;
+            padding: 18px 40px;
+            border-radius: 25px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 10px 30px rgba(38, 222, 129, 0.3);
+        }
+        
+        .play-now-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(38, 222, 129, 0.5);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .top-bar {
+                padding: 15px 20px;
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+            
+            .welcome-title {
+                font-size: 2.5rem;
+            }
+            
+            .main-content {
+                padding: 0 20px;
+            }
+            
+            .mines-card {
+                padding: 40px 30px;
+            }
+            
+            .top-actions {
+                gap: 10px;
+            }
+            
+            .action-btn {
+                padding: 8px 15px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Snow Animation -->
+    <div class="snow" id="snow"></div>
+    
+    <!-- Main Casino Container -->
+    <div class="casino-container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="logo">
+                <div class="logo-icon">D</div>
+                <div class="logo-text">DonutFlip</div>
+            </div>
+            
+            <div class="top-actions">
+                <div class="balance-display">
+                    Balance: $<span id="userBalance">0.00</span>
+                </div>
+                <button class="action-btn deposit-btn" id="depositBtn">Deposit</button>
+                <button class="action-btn withdraw-btn" id="withdrawBtn">Withdraw</button>
+                <button class="action-btn logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <h1 class="welcome-title">DonutFlip</h1>
+            <p class="welcome-subtitle">Premium Minecraft Casino Experience</p>
+            
+            <div class="games-section">
+                <h2 class="games-title">Available Games</h2>
+                
+                <!-- Mines Game Card -->
+                <div class="mines-card" onclick="playMines()">
+                    <div class="mines-icon">💎</div>
+                    <h3 class="mines-title">MINES</h3>
+                    <p class="mines-description">Find hidden gems while avoiding dangerous mines. The more gems you find, the higher your multiplier!</p>
+                    <button class="play-now-btn">PLAY NOW</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deposit Modal -->
+    <div class="deposit-modal" id="depositModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: none; align-items: center; justify-content: center; z-index: 10000;">
+        <div class="deposit-content" style="background: rgba(26, 26, 46, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; padding: 40px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);">
+            <h2 class="deposit-title" style="font-size: 24px; font-weight: 700; color: #4facfe; margin-bottom: 20px;">Deposit Instructions</h2>
+            <div class="deposit-instruction" id="depositInstruction" style="font-size: 18px; color: #ffffff; margin-bottom: 30px; padding: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 10px; border: 1px solid rgba(79, 172, 254, 0.3); font-family: 'Consolas', 'Monaco', 'Courier New', monospace; letter-spacing: 1px;">
+                /pay eelhoed_pungent0
+            </div>
+            <p style="color: #b4b4b4; margin-bottom: 20px; font-size: 14px;">
+                Send money using the command above. Your balance will be updated automatically.
+            </p>
+            <button class="close-modal" id="closeModal" style="padding: 12px 30px; background: linear-gradient(135deg, #26de81 0%, #20bf6b 100%); border: none; border-radius: 10px; color: white; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">Close</button>
+        </div>
+    </div>
+
+    <!-- Withdraw Modal -->
+    <div class="deposit-modal" id="withdrawModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: none; align-items: center; justify-content: center; z-index: 10000;">
+        <div class="deposit-content" style="background: rgba(26, 26, 46, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; padding: 40px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);">
+            <h2 style="font-size: 24px; font-weight: 700; color: #ff6b35; margin-bottom: 20px;">Withdraw Funds</h2>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; color: #b4b4b4; font-size: 14px; margin-bottom: 10px;">Current Balance: $<span id="withdrawBalance">0.00</span></label>
+                <input type="number" id="withdrawAmount" placeholder="Enter amount" min="0" step="0.01" style="width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 10px; color: white; font-size: 16px; text-align: center;" />
+            </div>
+            
+            <p style="color: #b4b4b4; margin-bottom: 20px; font-size: 14px;">
+                Enter the amount you want to withdraw. Funds will be sent to your Minecraft account.
+            </p>
+            
+            <div style="display: flex; gap: 10px;">
+                <button id="confirmWithdraw" style="flex: 1; padding: 12px 20px; background: linear-gradient(135deg, #26de81 0%, #20bf6b 100%); border: none; border-radius: 10px; color: white; font-size: 16px; font-weight: 600; cursor: pointer;">Withdraw</button>
+                <button id="closeWithdrawModal" style="flex: 1; padding: 12px 20px; background: linear-gradient(135deg, #6c757d 0%, #495057 100%); border: none; border-radius: 10px; color: white; font-size: 16px; font-weight: 600; cursor: pointer;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/balanceManager.js"></script>
+    <script>
+        // Snow Animation
+        function createSnowflakes() {
+            const snowContainer = document.getElementById('snow');
+            const snowflakeCount = 100;
+            
+            for (let i = 0; i < snowflakeCount; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.classList.add('snowflake');
+                snowflake.textContent = '❄';
+                
+                // Random properties
+                snowflake.style.left = Math.random() * 100 + '%';
+                snowflake.style.animationDuration = (Math.random() * 5 + 3) + 's';
+                snowflake.style.animationDelay = Math.random() * 2 + 's';
+                const size = Math.random() * 8 + 8;
+                snowflake.style.fontSize = size + 'px';
+                
+                snowContainer.appendChild(snowflake);
+            }
+        }
+        
+        // Page functions
+        function playMines() {
+            const username = balanceManager.getUsername();
+            if (username) {
+                window.location.href = `./mines.html?user=${encodeURIComponent(username)}`;
+            } else {
+                window.location.href = './mines.html';
+            }
+        }
+        
+        // Deposit & Withdraw event listener'ları ve modal kontrolü
+        function setupDepositWithdrawModals() {
+            const depositBtn = document.getElementById('depositBtn');
+            const depositModal = document.getElementById('depositModal');
+            const closeModal = document.getElementById('closeModal');
+            
+            const withdrawBtn = document.getElementById('withdrawBtn');
+            const withdrawModal = document.getElementById('withdrawModal');
+            const closeWithdrawModal = document.getElementById('closeWithdrawModal');
+            const confirmWithdraw = document.getElementById('confirmWithdraw');
+            
+            // Bot adını al ve güncelle
+            updateBotName();
+            
+            // Deposit butonuna tıklama
+            depositBtn.addEventListener('click', function() {
+                updateBotName();
+                depositModal.style.display = 'flex';
+            });
+            
+            // Withdraw butonuna tıklama
+            withdrawBtn.addEventListener('click', function() {
+                document.getElementById('withdrawBalance').textContent = balanceManager.getBalance().toFixed(2);
+                document.getElementById('withdrawAmount').value = '';
+                withdrawModal.style.display = 'flex';
+            });
+            
+            // Withdraw onaylama
+            confirmWithdraw.addEventListener('click', async function() {
+                const inputValue = document.getElementById('withdrawAmount').value;
+                const amount = parseAmount(inputValue);
+                
+                console.log('💸 Withdraw amount parsed:', inputValue, '->', amount);
+                
+                if (amount <= 0) {
+                    showNotification('Please enter a valid amount!', 'error');
+                    return;
+                }
+                const result = await balanceManager.processWithdraw(amount);
+                if (result.success) {
+                    showNotification(result.message, 'success');
+                } else {
+                    showNotification('Withdrawal failed: ' + result.error, 'error');
+                }
+                withdrawModal.style.display = 'none';
+            });
+            
+            // Modal'ı kapatma
+            closeModal.addEventListener('click', function() {
+                depositModal.style.display = 'none';
+            });
+            closeWithdrawModal.addEventListener('click', function() {
+                withdrawModal.style.display = 'none';
+            });
+            
+            // Modal dışına tıklayınca kapatma
+            depositModal.addEventListener('click', function(e) {
+                if (e.target === depositModal) depositModal.style.display = 'none';
+            });
+            withdrawModal.addEventListener('click', function(e) {
+                if (e.target === withdrawModal) withdrawModal.style.display = 'none';
+            });
+            
+            // ESC ile kapatma
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (depositModal.style.display === 'flex') depositModal.style.display = 'none';
+                    if (withdrawModal.style.display === 'flex') withdrawModal.style.display = 'none';
+                }
+            });
+        }
+        
+        // Bot komutunu güncelle
+        async function updateBotName() {
+            const depositInfo = await balanceManager.processDeposit();
+            const el = document.getElementById('depositInstruction');
+            if (el) el.textContent = depositInfo.command;
+        }
+        
+        // Notification sistemi
+        function showNotification(message, type = 'info', duration = 4000) {
+            // Eski notification'ları kaldır
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(n => n.remove());
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Animation için küçük gecikme
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // Otomatik kaldırma
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, duration);
+        }
+        
+        // Para formatını parse et (k/m multiplier desteği)
+        function parseAmount(input) {
+            if (!input) return 0;
+            
+            let str = input.toString().toLowerCase().trim();
+            console.log('🔍 Dashboard para parse:', input, '->');
+            
+            // Nokta ve diğer gereksiz karakterleri temizle
+            str = str.replace(/[^0-9.km]/g, ''); // Sadece sayı, nokta, k, m kalsın
+            console.log('Temizlendi:', str);
+            
+            // k/m multiplier kontrol et
+            const kMatch = str.match(/^([0-9]*\.?[0-9]+)k$/);
+            const mMatch = str.match(/^([0-9]*\.?[0-9]+)m$/);
+            
+            if (kMatch) {
+                const number = parseFloat(kMatch[1]);
+                const result = number * 1000;
+                console.log('K multiplier:', number, '*', 1000, '=', result);
+                return result;
+            }
+            
+            if (mMatch) {
+                const number = parseFloat(mMatch[1]);
+                const result = number * 1000000;
+                console.log('M multiplier:', number, '*', 1000000, '=', result);
+                return result;
+            }
+            
+            // Sadece sayı varsa
+            const result = parseFloat(str) || 0;
+            console.log('Normal sayı:', str, '->', result);
+            return result;
+        }
+        
+        // Logout fonksiyonu
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                showNotification('Logging out...', 'info', 2000);
+                
+                // Balance'ı server'a kaydet
+                balanceManager.syncWithServer();
+                
+                // Sadece gerekli verileri temizle (balance'ı değil!)
+                localStorage.removeItem('donutflip_username');
+                localStorage.removeItem('donutflip_tpa_verified');
+                localStorage.removeItem('donutflip_verify_time');
+                // donutflip_balance KALSIN - server'dan yüklenecek
+                
+                console.log('🚪 Logout - Session temizlendi, balance korundu');
+                
+                setTimeout(() => {
+                    window.location.href = './index.html';
+                }, 1000);
+            }
+        }
+        
+        // Hiçbir kontrol yapmayan login fonksiyonu
+        function checkLogin() {
+            console.log('🔍 Dashboard - hiçbir kontrol yok');
+            
+            // Sadece URL'den username al varsa
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlUsername = urlParams.get('user');
+            if (urlUsername) {
+                balanceManager.saveUsername(urlUsername);
+            }
+            
+            return true; // Her zaman geç
+        }
+        
+        // Dashboard'ı başlat
+        function proceedWithDashboard() {
+            console.log('🎰 Dashboard başlatılıyor...');
+            initializeDashboard();
+        }
+        
+        // Dashboard başlatma fonksiyonu
+        function initializeDashboard() {
+            createSnowflakes();
+            setupDepositWithdrawModals();
+            
+            // Balance Manager integration - sadece callback
+            balanceManager.onBalanceChange(function(balance, username) {
+                const userBalanceEl = document.getElementById('userBalance');
+                if (userBalanceEl) userBalanceEl.textContent = balance.toFixed(2);
+                console.log('Dashboard balance updated:', balance);
+            });
+            
+            // Server'dan balance yükleme - tek seferlik
+            setTimeout(() => {
+                balanceManager.loadFromServer();
+            }, 1000);
+            
+            console.log('🎰 DonutFlip Casino loaded!');
+        }
+        
+        // Login kontrol edildi mi flag
+        let loginChecked = false;
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Dashboard yükleniyor...');
+            
+            // Sadece bir kez login kontrol et
+            if (!loginChecked) {
+                loginChecked = true;
+                if (checkLogin()) {
+                    // Username var, dashboard'ı başlat
+                    initializeDashboard();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

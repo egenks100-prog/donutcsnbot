@@ -1,0 +1,30 @@
+{
+  "name": "donutflip-bot",
+  "version": "1.0.0",
+  "description": "DonutFlip gambling bot with balance system",
+  "main": "bot/bot.js",
+  "scripts": {
+    "start": "node bot/bot.js",
+    "dev": "node bot/bot.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mineflayer": "^4.18.0",
+    "socket.io": "^4.7.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/donutflip-bot.git"
+  },
+  "keywords": [
+    "minecraft",
+    "bot",
+    "gambling",
+    "donutsmp"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

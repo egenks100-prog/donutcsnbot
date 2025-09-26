@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DonutFlip Casino - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000000;
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Snow Animation */
+        .snow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            color: #ffffff;
+            user-select: none;
+            pointer-events: none;
+            font-size: 12px;
+            animation: fall linear infinite;
+        }
+        
+        @keyframes fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0.3;
+            }
+        }
+        
+        /* Login Container */
+        .login-container {
+            position: relative;
+            z-index: 2;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 30px;
+            padding: 60px 50px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 28px;
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.3);
+        }
+        
+        .logo-text {
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .welcome-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-subtitle {
+            font-size: 16px;
+            color: #b4b4b4;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+        
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .input-group {
+            text-align: left;
+        }
+        
+        .input-label {
+            display: block;
+            color: #4facfe;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .login-input {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        .login-input:focus {
+            border-color: #4facfe;
+            background: rgba(79, 172, 254, 0.1);
+            box-shadow: 0 0 20px rgba(79, 172, 254, 0.2);
+        }
+        
+        .login-input::placeholder {
+            color: #666;
+        }
+        
+        .login-btn {
+            background: linear-gradient(135deg, #26de81 0%, #20bf6b 100%);
+            border: none;
+            padding: 18px 40px;
+            border-radius: 15px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 30px rgba(38, 222, 129, 0.3);
+            margin-top: 10px;
+        }
+        
+        .login-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(38, 222, 129, 0.5);
+        }
+        
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .tpa-info {
+            background: rgba(79, 172, 254, 0.1);
+            border: 1px solid rgba(79, 172, 254, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .tpa-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #4facfe;
+            margin-bottom: 10px;
+        }
+        
+        .tpa-command {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(79, 172, 254, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 18px;
+            color: #ffffff;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            word-break: break-all;
+        }
+        
+        .tpa-note {
+            font-size: 14px;
+            color: #b4b4b4;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        
+        .waiting-status {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(79, 172, 254, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .status-text {
+            color: #4facfe;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        .connected-user {
+            color: #b4b4b4;
+            font-size: 14px;
+        }
+        
+        
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        /* Notification System */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            max-width: 400px;
+            padding: 15px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            z-index: 10001;
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, rgba(38, 222, 129, 0.9) 0%, rgba(32, 191, 107, 0.9) 100%);
+            border-left-color: #26de81;
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.9) 0%, rgba(238, 90, 36, 0.9) 100%);
+            border-left-color: #ff6b6b;
+        }
+        
+        .notification.info {
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.9) 0%, rgba(0, 242, 254, 0.9) 100%);
+            border-left-color: #4facfe;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .login-container {
+                padding: 40px 30px;
+                margin: 20px;
+            }
+            
+            .logo-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 22px;
+            }
+            
+            .logo-text {
+                font-size: 28px;
+            }
+            
+            .welcome-title {
+                font-size: 24px;
+            }
+            
+            .tpa-command {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Snow Animation -->
+    <div class="snow" id="snow"></div>
+    
+    <!-- Login Container -->
+    <div class="login-container">
+        <div class="logo">
+            <div class="logo-icon">D</div>
+            <div class="logo-text">DonutFlip</div>
+        </div>
+        
+        <h1 class="welcome-title">Welcome to DonutFlip</h1>
+        <p class="welcome-subtitle">Enter your Minecraft username to get started<br>Premium casino gaming experience awaits!</p>
+        
+        <div class="login-form">
+            <div class="input-group">
+                <label class="input-label" for="username">Minecraft Username</label>
+                <input type="text" id="username" class="login-input" placeholder="Enter your username...">
+            </div>
+            
+            <button class="login-btn" id="loginBtn" onclick="handleLogin()">
+                Continue
+            </button>
+        </div>
+        
+        <div class="tpa-info" id="tpaInfo" style="display: none;">
+            <div class="tpa-title">How to Connect:</div>
+            <div class="tpa-command" id="tpaCommand">/tpa eelhoed_pungent0</div>
+            <div class="tpa-note">
+                Use this command in Minecraft to teleport to our casino server.<br>
+                Once you connect, you'll be automatically redirected to the casino!
+            </div>
+            <div class="waiting-status" id="waitingStatus">
+                <div class="status-text">⏳ Waiting for TPA connection...</div>
+                <div class="connected-user">Connected as: <strong id="connectedUsername"></strong></div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js" crossorigin="anonymous" defer></script>
+    <script src="js/balanceManager.js"></script>
+    <script>
+        // Snow Animation
+        function createSnowflakes() {
+            const snowContainer = document.getElementById('snow');
+            const snowflakeCount = 100;
+            
+            for (let i = 0; i < snowflakeCount; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.classList.add('snowflake');
+                snowflake.textContent = '❄';
+                
+                // Random properties
+                snowflake.style.left = Math.random() * 100 + '%';
+                snowflake.style.animationDuration = (Math.random() * 5 + 3) + 's';
+                snowflake.style.animationDelay = Math.random() * 2 + 's';
+                const size = Math.random() * 8 + 8;
+                snowflake.style.fontSize = size + 'px';
+                
+                snowContainer.appendChild(snowflake);
+            }
+        }
+        
+        // Notification sistemi
+        function showNotification(message, type = 'info', duration = 4000) {
+            // Eski notification'ları kaldır
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(n => n.remove());
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Animation için küçük gecikme
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // Otomatik kaldırma
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, duration);
+        }
+        
+        
+        // Bot komutunu güncelle
+        async function updateBotName() {
+            try {
+                const response = await fetch('/api/bot/status');
+                const data = await response.json();
+                const botName = data.username || 'eelhoed_pungent0';
+                
+                document.getElementById('tpaCommand').textContent = `/tpa ${botName}`;
+            } catch (error) {
+                console.log('Bot bilgisi alınamadı, default kullanılıyor');
+            }
+        }
+        
+        // Bot'a kullanıcı kaydet (arka planda)
+        async function registerWithBot(username) {
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: username,
+                        ip: '127.0.0.1'
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('🤖 Bot kayit:', data.success ? 'Başarılı' : 'Başarısız');
+                
+                // Bot adını güncelle
+                if (data.botInfo?.actualName) {
+                    document.getElementById('tpaCommand').textContent = `/tpa ${data.botInfo.actualName}`;
+                }
+            } catch (error) {
+                console.log('⚠️ Bot kayit hatası:', error);
+            }
+        }
+        
+        // Basit giriş fonksiyonu
+        function handleLogin() {
+            console.log('🚀 Login başlatıldı');
+            
+            const username = document.getElementById('username').value.trim();
+            const loginBtn = document.getElementById('loginBtn');
+            
+            if (!username) {
+                showNotification('Please enter your Minecraft username!', 'error');
+                return;
+            }
+            
+            if (username.length < 3 || username.length > 16) {
+                showNotification('Username must be between 3-16 characters!', 'error');
+                return;
+            }
+            
+            if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                showNotification('Username can only contain letters, numbers, and underscores!', 'error');
+                return;
+            }
+            
+            // Username'ı kaydet
+            balanceManager.saveUsername(username);
+            console.log('💾 Username kaydedildi:', username);
+            
+            // TPA bölümünü göster
+            document.querySelector('.login-form').style.display = 'none';
+            document.getElementById('tpaInfo').style.display = 'block';
+            document.getElementById('connectedUsername').textContent = username;
+            
+            // Başlıkları güncelle
+            document.querySelector('.welcome-title').textContent = `Welcome ${username}!`;
+            document.querySelector('.welcome-subtitle').innerHTML = 'Now connect to the server using the TPA command below';
+            
+            showNotification(`Ready! Connect via TPA command below`, 'success');
+            
+            // Bot'a kaydet (arka planda)
+            registerWithBot(username);
+            
+            // WebSocket'i kur
+            setupWebSocket(username);
+        }
+        
+        // WebSocket kurulumu
+        function setupWebSocket(username) {
+            console.log('🔌 WebSocket başlatılıyor - Kullanıcı:', username);
+            
+            if (typeof io === 'undefined') {
+                console.log('⚠️ Socket.IO bulunamadı');
+                return;
+            }
+            
+            const socket = io();
+            
+            socket.on('connect', function() {
+                console.log('✅ WebSocket bağlandı');
+            });
+            
+            // TPA doğrulandığında
+            socket.on('userVerified', function(data) {
+                console.log('🎉 TPA Doğrulandı:', data);
+                
+                if (data.username === username) {
+                    console.log('✅ Doğru kullanıcı!');
+                    
+                    // Username'ı tekrar kaydet ve verified flag ekle
+                    balanceManager.saveUsername(username);
+                    localStorage.setItem('donutflip_tpa_verified', 'true');
+                    localStorage.setItem('donutflip_verify_time', Date.now().toString());
+                    console.log('💾 TPA doğrulaması tamamlandı:', username);
+                    
+                    document.querySelector('.status-text').textContent = '✅ TPA Verified! Redirecting...';
+                    showNotification('TPA successful! Redirecting...', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = `./dashboard.html?user=${encodeURIComponent(username)}`;
+                    }, 2000);
+                } else {
+                    console.log('❌ Yanlış kullanıcı TPA attı:', data.username, 'Beklenen:', username);
+                }
+            });
+            
+            // TPA isteği
+            socket.on('tpaRequest', function(data) {
+                console.log('📞 TPA İsteği:', data);
+                if (data.from === username) {
+                    document.querySelector('.status-text').textContent = 'TPA request received...';
+                }
+            });
+        }
+        
+        
+        // Basit otomatik giriş kontrolü - sadece input'u doldur, yönlendirme yok
+        function checkExistingLogin() {
+            const username = balanceManager.getUsername();
+            if (username && username !== 'international374') {
+                console.log('🔄 Mevcut kullanıcı bulundu (TPA bekleniyor):', username);
+                const input = document.getElementById('username');
+                if (input) input.value = username;
+                showNotification(`Welcome back ${username}! Please send TPA.`, 'info', 1500);
+            } else {
+                console.log('🆕 Yeni kullanıcı');
+            }
+        }
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎮 DonutFlip Casino başlatılıyor...');
+            
+            createSnowflakes();
+            updateBotName();
+            checkExistingLogin();
+            
+            console.log('✅ Casino loaded!');
+        });
+        
+        // Auto-focus username input
+        setTimeout(() => {
+            document.getElementById('username').focus();
+        }, 500);
+    </script>
+</body>
+</html>
