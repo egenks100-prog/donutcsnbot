@@ -3,11 +3,10 @@ zerops:
     build:
       base: nodejs@20
       buildCommands:
-        - npm ci
-        - npm run build
+        - npm install
       deployFiles:
         - bot
-        - web  
+        - web
         - package.json
         - .env
     run:
@@ -22,4 +21,4 @@ zerops:
         MC_USERNAME: eelhoed_pungent0
         MC_AUTH: microsoft
         PORT: "3001"
-      startCommand: npm start
+      startCommand: node bot/bot.js
